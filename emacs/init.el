@@ -22,6 +22,7 @@
   '(helm
     helm-swoop
     evil
+    magit
     semantic
     smart-mode-line
     projectile
@@ -57,11 +58,11 @@
   (interactive)
   (other-window -1)
 )
-(define-key (current-global-map) (kbd "M-o") 'other-window)
-(define-key (current-global-map) (kbd "M-O") 'frame-bck)
 
-;; Map switching windows with shift + arrows
-(windmove-default-keybindings)
+;; Define useful keys
+(define-key (current-global-map) (kbd "M-o") 'other-window) ;; window shift
+(define-key (current-global-map) (kbd "M-O") 'frame-bck)    ;; window shift back
+(windmove-default-keybindings) ;; Map switching windows with shift + arrows
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -147,7 +148,7 @@
 (setq helm-multi-swoop-edit-save t)
 
 ;; If this value is t, split window inside the current window
-(setq helm-swoop-split-with-multiple-windows t)
+(setq helm-swoop-split-with-multiple-windows nil)
 
 ;; Split direcion. 'split-window-vertically or 'split-window-horizontally
 (setq helm-swoop-split-direction 'split-window-vertically)
@@ -179,8 +180,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'recentf)
 (recentf-mode 1)
-(setq recentf-max-menu-items 30)
-(run-at-time nil (* 5 30) 'recentf-save-list)
+(setq recentf-max-menu-items 60)
+(run-at-time nil (* 5 60) 'recentf-save-list)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -219,19 +220,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (projectile-global-mode)
 (add-hook 'ruby-mode-hook 'projectile-mode)
+(require 'helm-projectile)
+(helm-projectile-on)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Add Prolog directory
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Add sicstus if it exists, otherwise use swi
+(if (file-exists-p "/usr/local/sicstus4.4.0/bin/sicstus")
+  (progn
+    (setenv "EPROLOG" "/usr/local/sicstus4.4.0/bin/sicstus") ; sicstus directory
+    (setq prolog-system 'sicstus) ; sicstus 
+    )
+  (setq prolog-system 'swi) ; swi
+  )
+ 
 (add-to-list 'load-path "~/.emacs.d/prolog/")
 (autoload 'run-prolog "prolog" "Start a Prolog sub-process." t)
 (autoload 'prolog-mode "prolog" "Major mode for editing Prolog programs." t)
-(setq prolog-system 'swi) ; prolog-system below for possible values
 (add-to-list 'auto-mode-alist '("\\.pl\\'" . prolog-mode))
 
 (require 'ediprolog)
-(global-set-key [f10] 'ediprolog-dwim)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -244,6 +257,48 @@
       `((".*" , temporary-file-directory t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Markdown mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; C/C++ mode formatting 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq c-basic-offset 4)
+
+(defun my-make-CR-do-indent ()
+  (define-key c-mode-base-map "\C-m" 'c-context-line-break))
+(add-hook 'c-initialization-hook 'my-make-CR-do-indent)
+
+(c-add-style "herk-style" 
+	     '("stroustrup"
+	       (indent-tabs-mode . nil)        ; use spaces rather than tabs
+	       (c-basic-offset . 4)            ; indent by four spaces
+	       (c-offsets-alist . ((inline-open . 0)  ; custom indentation rules
+				   (brace-list-open . 0)
+				   (statement-case-open . +)))))
+
+(defun my-c++-mode-hook ()
+  (c-set-style "herk-style")        ; use my-style defined above
+  (auto-fill-mode)         
+  (c-toggle-auto-hungry-state 1))
+
+(add-hook 'c++-mode-hook 'my-c++-mode-hook)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Magit Key Bindings 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; End basic init
@@ -260,7 +315,7 @@
  '(org-agenda-files (quote ("~/Dropbox/todo/today.org")))
  '(package-selected-packages
    (quote
-    (smart-mode-line helm-swoop helm-projectile helm ediprolog projectile zenburn-theme org material-theme better-defaults))))
+    (flycheck magit markdown-mode smart-mode-line helm-swoop helm-projectile helm ediprolog projectile zenburn-theme org material-theme better-defaults))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
