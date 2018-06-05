@@ -41,3 +41,6 @@ alias setclip="xclip -selection c"
 alias getclip="xclip -selection c -o"
 
 # Personal aliases in .oh-my-zsh/custom/aliases.zsh
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
