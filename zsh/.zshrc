@@ -13,23 +13,33 @@ export UPDATE_ZSH_DAYS=7
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git battery tmux)
+plugins=(
+    git
+    battery
+    tmux
+    plugins
+)
 
 source $ZSH/oh-my-zsh.sh
 
-# User configuration
+# User configuration -> can also move this to ~/.zshenv
 
-# export MANPATH="/usr/local/man:$MANPATH"
+# Adding poetry for python
+export PATH="$HOME/.poetry/bin:$PATH"
 
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
+# Testing some older mysql code and moving them away
+# export PATH="/usr/local/opt/mysql@5.5/bin:$PATH"
 
-# ssh
-# export SSH_KEY_PATH="~/.ssh/rsa_id"
+# Lets use pyenv
+if command -v pyenv 1>/dev/null 2>&1; then
+    eval "$(pyenv init -)"
+fi
+export PATH="$HOME/.poetry/bin:$PATH"
+
+# This only works if fzf is installed
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Custom Paths
-export PATH="/home/herk/anaconda3/bin:$PATH" 
-export PATH="/opt/sublime_text_3/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH=$PATH:/usr/local/sicstus4.4.0/bin
 # Local path
