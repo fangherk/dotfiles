@@ -10,6 +10,13 @@ else
     echo "Looks like you have the required vim files, nice!"
 fi
 
+if [[ -f "~/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]]
+then
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+else
+    echo "Looks like you have autosuggestions, nice!"
+fi
+
 echo "Move vim file to home directory?"
 cp -i vim/.vimrc ~/.vimrc
 
