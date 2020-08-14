@@ -2,6 +2,7 @@
 # Should double check this path if on non OSX box
 export ZSH=/Users/herk/.oh-my-zsh
 
+ZSH_DISABLE_COMPFIX=true
 ZSH_THEME="gallois"
 
 plugins=(git zsh-autosuggestions)
