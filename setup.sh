@@ -53,7 +53,8 @@ then
 fi
 
 # Add spacemacs, make sure to use the develop branch
-if [[ ! -d "$HOME/.emacs.d"]]
+if [[ ! -d "$HOME/.emacs.d" ]]
+then
     echo "installing spacemacs"
     git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 fi
