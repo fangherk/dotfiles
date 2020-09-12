@@ -89,7 +89,7 @@ nnoremap <Leader><Leader> :e#<CR>
 map <C-n> :NERDTreeToggle<CR>
 
 """ add to system clipboard
-set clipboard=unnamedplus
+set clipboard=unnamed
 
 """ add support
 autocmd FileType apache setlocal commentstring=#\ %s

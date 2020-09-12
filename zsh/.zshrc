@@ -21,7 +21,7 @@ export PATH="$HOME/.poetry/bin:$PATH"
 if command -v pyenv 1>/dev/null 2>&1; then
     eval "$(pyenv init -)"
 fi
-export PATH="$HOME/.poetry/bin:$PATH"
+# export PATH="$HOME/.poetry/bin:$PATH"
 
 # This only works if fzf is installed
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -38,3 +38,4 @@ export PATH=$PATH:/usr/local/bin
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
 export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
+
