@@ -45,7 +45,8 @@ values."
             c-c++-enable-google-style t
             )
      react
-     helm
+     ivy
+     ;; helm
      (auto-completion :variables
                       auto-completion-return-key-behavior 'complete
                       auto-completion-tab-key-behavior 'cycle
@@ -59,12 +60,13 @@ values."
      (python :variables
              python-formatter 'black
              python-test-runner 'pytest
-             python-enable-yapf-format-on-save nil
-             python-fill-column 99
+             python-fill-column 100
              python-backend 'lsp
-             python-sort-imports-on-save nil
+             python-sort-imports-on-save t
+             python-format-on-save t
              )
      lsp
+     prettier
      ruby
      (haskell :variables haskell-completion-backend 'lsp)
      latex
@@ -72,8 +74,7 @@ values."
      rust
      html
      (javascript :variables
-                 javascript-backend 'lsp
-                 javascript-lsp-linter nil)
+                 javascript-backend 'lsp)
      osx
      better-defaults
      emacs-lisp
@@ -264,14 +265,14 @@ values."
    dotspacemacs-loading-progress-bar nil
    ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
    ;; (Emacs 24.4+ only)
-   dotspacemacs-fullscreen-at-startup t
+   dotspacemacs-fullscreen-at-startup nil
    ;; If non nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX. (default nil)
    dotspacemacs-fullscreen-use-non-native nil
    ;; If non nil the frame is maximized when Emacs starts up.
    ;; Takes effect only if `dotspacemacs-fullscreen-at-startup' is nil.
    ;; (default nil) (Emacs 24.4+ only)
-   dotspacemacs-maximized-at-startup nil
+   dotspacemacs-maximized-at-startup t
    ;; A value from the range (0..100), in increasing opacity, which describes
    ;; the transparency level of a frame when it's active or selected.
    ;; Transparency can be toggled through `toggle-transparency'. (default 90)
@@ -354,6 +355,8 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+  (setq exec-path (cons "/Users/herk/.pyenv/shims" exec-path))
   (setq-default typescript-indent-level 2) ; indent only by 2 in typescript
   ;(setq rust-format-on-save t) ; Make rust formatting good
                                         ; Add a Latex mode
@@ -377,33 +380,34 @@ you should place your code here."
    web-mode-script-padding 0
    web-mode-style-padding 0)
 
-                                        ; No indent tabs
-  (setq-default indent-tabs-mode nil)
+  ;; Use Cmd+P for file lookup.
+  ;; https://github.com/syl20bnr/spacemacs/issues/1544
+  (define-key evil-normal-state-map (kbd "H-p") 'counsel-projectile-find-file)
 
-                                        ; Web mode extras
-  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.xml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.liquid\\'" . web-mode))
-  (with-eval-after-load 'web-mode
-    (add-to-list 'web-mode-indentation-params '("lineup-args" . nil))
-    (add-to-list 'web-mode-indentation-params '("lineup-concats" . nil))
-    (add-to-list 'web-mode-indentation-params '("lineup-calls" . nil)))
+  ;; (setq ns-auto-hide-menu-bar nil)
+  ;; Use Cmd+Shift+F for counsel rg
+  (define-key evil-normal-state-map (kbd "H-f") 'counsel-projectile-rg)
+
+  (add-hook 'rjsx-mode-hook 'prettier-js-mode)
+  (setq-default indent-tabs-mode nil) ; No indent tabs
+
+  (defun delete-file-and-buffer ()
+    "Kill the current buffer and deletes the file it is visiting."
+    (interactive)
+    (let ((filename (buffer-file-name)))
+      (if filename
+          (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+              (progn
+                (delete-file filename)
+                (message "Deleted file %s." filename)
+                (kill-buffer)))
+        (message "Not a file visiting buffer!"))))
   (setenv "MITSCHEME_LIBRARY_PATH"
           "/Applications/mit-scheme.app/Contents/Resources")
   (auto-fill-mode 1)
   (setq lsp-haskell-process-path-hie "hie-wrapper")
-  (evil-leader/set-key "/" 'spacemacs/helm-project-do-ag)
-  (custom-set-variables
-   '(helm-ag-base-command "rg --no-heading")
-   `(helm-ag-success-exit-status '(0 2)))
-   ;;'(helm-ag-command-option "--literal"))
-  )
+  (setq python-shell-interpreter "python3")
+)
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -440,7 +444,7 @@ This function is called at the very end of Spacemacs initialization."
  '(helm-ag-insert-at-point 'symbol)
  '(helm-ag-success-exit-status '(0 2))
  '(package-selected-packages
-   '(emojify emoji-cheat-sheet-plus company-emoji vmd-mode tide typescript-mode sql-indent rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest insert-shebang helm-rg fish-mode dockerfile-mode docker tablist docker-tramp company-shell chruby bundler inf-ruby soothe-theme web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern tern coffee-mode vimrc-mode dactyl-mode disaster company-c-headers cmake-mode clang-format transient lv yaml-mode company-auctex auctex-latexmk auctex toml-mode racer flycheck-rust cargo rust-mode yapfify xterm-color web-mode unfill tagedit smeargle slim-mode shell-pop scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode pip-requirements pbcopy osx-trash osx-dictionary orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow live-py-mode launchctl intero hy-mode dash-functional htmlize hlint-refactor hindent helm-pydoc helm-hoogle helm-gitignore helm-css-scss helm-company helm-c-yasnippet haskell-snippets haml-mode gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck-haskell flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help emmet-mode diff-hl cython-mode company-web web-completion-data company-statistics company-ghci company-ghc ghc haskell-mode company-cabal company-anaconda company cmm-mode auto-yasnippet yasnippet auto-dictionary anaconda-mode pythonic ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu elisp-slime-nav dumb-jump f dash s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async))
+   '(wgrep smex lsp-ivy ivy-yasnippet ivy-xref ivy-rtags ivy-purpose ivy-hydra flyspell-correct-ivy counsel-projectile counsel-css counsel swiper ivy vmd-mode tide typescript-mode sql-indent rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest insert-shebang helm-rg fish-mode dockerfile-mode docker tablist docker-tramp company-shell chruby bundler inf-ruby soothe-theme web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern tern coffee-mode vimrc-mode dactyl-mode disaster company-c-headers cmake-mode clang-format transient lv yaml-mode company-auctex auctex-latexmk auctex toml-mode racer flycheck-rust cargo rust-mode yapfify xterm-color web-mode unfill tagedit smeargle slim-mode shell-pop scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode pip-requirements pbcopy osx-trash osx-dictionary orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow live-py-mode launchctl intero hy-mode dash-functional htmlize hlint-refactor hindent helm-pydoc helm-hoogle helm-gitignore helm-css-scss helm-company helm-c-yasnippet haskell-snippets haml-mode gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck-haskell flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help emmet-mode diff-hl cython-mode company-web web-completion-data company-statistics company-ghci company-ghc ghc haskell-mode company-cabal company-anaconda company cmm-mode auto-yasnippet yasnippet auto-dictionary anaconda-mode pythonic ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu elisp-slime-nav dumb-jump f dash s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async))
  '(scheme-program-name "mit-scheme"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
